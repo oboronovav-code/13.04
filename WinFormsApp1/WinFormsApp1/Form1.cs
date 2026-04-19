@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using System.Collections.Generic;
 
 namespace WinFormsApp1
 {
@@ -8,6 +10,8 @@ namespace WinFormsApp1
         {
             InitializeComponent();
             CreateGrid();
+            textBox1.Multiline = true;
+            textBox1.ScrollBars = ScrollBars.Vertical;
         }
 
         private Random _random = new Random();
@@ -57,7 +61,7 @@ namespace WinFormsApp1
                 b.Text = "O";
 
             turn = !turn;      // Передаємо хід
-            b.Enabled = false; 
+            b.Enabled = false;
             turnCount++;
 
             if (CheckWinner())
@@ -67,7 +71,7 @@ namespace WinFormsApp1
         }
 
         private bool CheckWinner()
-        { 
+        {
             string[,] s = new string[3, 3];
 
             for (int i = 0; i < 3; i++)
@@ -99,6 +103,44 @@ namespace WinFormsApp1
             if (s[0, 2] != "" && s[0, 2] == s[1, 1] && s[1, 1] == s[2, 0]) return true;
 
             return false;
+        }
+
+        private string _currentFilePath = ""; // Тут зберігатимемо шлях до відкритого файлу
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "Текстові файли (*.txt)|*.txt|Усі файли (*.*)|*.*";
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    _currentFilePath = openFileDialog.FileName;
+
+                    // Читаємо весь текст із файлу і кладемо в TextBox
+                    textBox1.Text = File.ReadAllText(_currentFilePath);
+
+                    this.Text = "Редагування: " + Path.GetFileName(_currentFilePath);
+                }
+            }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+            {
+                saveFileDialog.Filter = "Текстові файли (*.txt)|*.txt";
+                saveFileDialog.FileName = Path.GetFileName(_currentFilePath);
+
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // Записуємо контент із TextBox у файл
+                    File.WriteAllText(saveFileDialog.FileName, textBox1.Text);
+
+                    _currentFilePath = saveFileDialog.FileName;
+                    MessageBox.Show("Файл успішно збережено!", "Готово");
+                }
+            }
         }
     }
 }
